@@ -55,6 +55,22 @@ for i in range(10):
 vL = 0
 vR = 0
 
+def update_odometry(vL, vR):
+    global pose_x, pose_y, pose_theta
+    linear_l = (vL / MAX_SPEED) * EPUCK_MAX_WHEEL_SPEED
+    linear_r = (vR / MAX_SPEED) * EPUCK_MAX_WHEEL_SPEED
+    # all this is pretty much just taken from the slides
+    v = ((linear_l / 2) + (linear_r / 2))
+    omega = (linear_r / EPUCK_AXLE_DIAMETER) - (linear_l / EPUCK_AXLE_DIAMETER)
+    xI_dot = math.cos(pose_theta) * v
+    yI_dot = math.sin(pose_theta) * v
+    theta_dot = omega
+    delta_t = SIM_TIMESTEP/1000
+    # integrate to get position
+    pose_x     += xI_dot * delta_t
+    pose_y     += yI_dot * delta_t
+    pose_theta += theta_dot * delta_t
+
 state = "line_follower"
 
 # Main Control Loop:
@@ -123,6 +139,7 @@ while robot.step(SIM_TIMESTEP) != -1:
                 else:
                     vL = -MAX_SPEED
                     vR = MAX_SPEED
+                update_odometry(vL, vR)
 
     # Part 3
     # TODO: Implement Loop Closure also under state "line_follower" to reset pose when robot passes over the Start Line.
