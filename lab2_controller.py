@@ -55,6 +55,8 @@ for i in range(10):
 vL = 0
 vR = 0
 
+state = "line_follower"
+
 # Main Control Loop:
 while robot.step(SIM_TIMESTEP) != -1:
 
@@ -66,9 +68,12 @@ while robot.step(SIM_TIMESTEP) != -1:
     # TODO: But when you don't need it, please comment it so you have a clean terminal.
     # print(gsr)
 
+    match state:
     # Part 1
     # TODO: Implement Maximum Speed Measurement under state "speed_measurement"
     # TODO: Save the speed within XZ-plane to EPUCK_MAX_WHEEL_SPEED after measuring it.
+        case "speed_measurement":
+            placeholder = "placeholder"
 
     # Part 2
     # TODO: Implement Line Following under state "line_follower"
@@ -101,6 +106,23 @@ while robot.step(SIM_TIMESTEP) != -1:
     # 4) Focus on getting things generally right first, then worry
     # about calculating odometry in the world coordinate system of the
     # Webots simulator first (x points down, y points right)
+            case "line_follower":
+                # Center Sensor detects line -> drive forward
+                if gsr[CENTER_IDX] < GROUND_SENSOR_THRESHOLD:
+                    vL = MAX_SPEED
+                    vR = MAX_SPEED
+                # Right Sensor detects line -> rotate clockwise in place
+                elif gsr[RIGHT_IDX] < GROUND_SENSOR_THRESHOLD:
+                    vL = MAX_SPEED
+                    vR = -MAX_SPEED
+                # Left Sensor detects line -> rotate counter-clockwise in place
+                elif gsr[LEFT_IDX] < GROUND_SENSOR_THRESHOLD:
+                    vL = -MAX_SPEED
+                    vR = MAX_SPEED
+                # No sensors detect line -> rotate counter-clockwise in place to reacquire
+                else:
+                    vL = -MAX_SPEED
+                    vR = MAX_SPEED
 
     # Part 3
     # TODO: Implement Loop Closure also under state "line_follower" to reset pose when robot passes over the Start Line.
