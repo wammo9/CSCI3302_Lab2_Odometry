@@ -71,7 +71,7 @@ def update_odometry(vL, vR):
     pose_y     += yI_dot * delta_t
     pose_theta += theta_dot * delta_t
 
-state = "line_follower"
+state = "speed_measurement"
 
 # Main Control Loop:
 while robot.step(SIM_TIMESTEP) != -1:
@@ -89,7 +89,7 @@ while robot.step(SIM_TIMESTEP) != -1:
     # TODO: Implement Maximum Speed Measurement under state "speed_measurement"
     # TODO: Save the speed within XZ-plane to EPUCK_MAX_WHEEL_SPEED after measuring it.
         case "speed_measurement":
-            placeholder = "placeholder"
+            state = "line_follower"
 
     # Part 2
     # TODO: Implement Line Following under state "line_follower"
