@@ -25,7 +25,7 @@ robot = Robot()
 # ePuck Constants
 EPUCK_AXLE_DIAMETER = 0.053  # ePuck's wheels are 53mm apart.
 # TODO: set the ePuck wheel speed in m/s after measuring the speed (Part 1)
-EPUCK_MAX_WHEEL_SPEED = 0
+EPUCK_MAX_WHEEL_SPEED = 0.1256
 MAX_SPEED = 6.28
 
 # get the time step of the current world.
@@ -54,6 +54,9 @@ for i in range(10):
 vL = 0
 vR = 0
 
+# Set constant for startTime
+STARTING_TIME = robot.getTime()
+
 def update_odometry(vL, vR):
     global pose_x, pose_y, pose_theta
     linear_l = (vL / MAX_SPEED) * EPUCK_MAX_WHEEL_SPEED
@@ -79,8 +82,7 @@ while robot.step(SIM_TIMESTEP) != -1:
     for i, gs in enumerate(ground_sensors):
         gsr[i] = gs.getValue()
 
-    # TODO: Uncomment to see the ground sensor values!
-    # TODO: But when you don't need it, please comment it so you have a clean terminal.
+
     print(gsr)
 
     match state:
@@ -89,6 +91,13 @@ while robot.step(SIM_TIMESTEP) != -1:
     # TODO: Save the speed within XZ-plane to EPUCK_MAX_WHEEL_SPEED after measuring it.
         case "speed_measurement":
             state = "line_follower"
+            # vL = MAX_SPEED
+            # vR = MAX_SPEED
+            # if gsr[CENTER_IDX] < GROUND_SENSOR_THRESHOLD and gsr[RIGHT_IDX] < GROUND_SENSOR_THRESHOLD and gsr[LEFT_IDX] < GROUND_SENSOR_THRESHOLD:
+            #     vL = 0
+            #     vR = 0
+            #     print(robot.getTime() - STARTING_TIME)
+                # state = "line_follower"
 
     # Part 2
     # TODO: Implement Line Following under state "line_follower"
