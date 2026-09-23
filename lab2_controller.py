@@ -24,7 +24,6 @@ robot = Robot()
 
 # ePuck Constants
 EPUCK_AXLE_DIAMETER = 0.053  # ePuck's wheels are 53mm apart.
-# TODO: set the ePuck wheel speed in m/s after measuring the speed (Part 1)
 EPUCK_MAX_WHEEL_SPEED = 0.1256
 MAX_SPEED = 6.28
 
@@ -57,6 +56,15 @@ vR = 0
 # Set constant for startTime
 STARTING_TIME = robot.getTime()
 
+# variables for loop closure
+TIME_SEEING_LINE_THRESHOLD = 0.1
+line_seen = False
+last_time_seeing_line = 0
+
+
+def seing_start_line(gsr):
+    return gsr[CENTER_IDX] < GROUND_SENSOR_THRESHOLD and gsr[RIGHT_IDX] < GROUND_SENSOR_THRESHOLD and gsr[LEFT_IDX] < GROUND_SENSOR_THRESHOLD
+
 def update_odometry(vL, vR):
     global pose_x, pose_y, pose_theta
     linear_l = (vL / MAX_SPEED) * EPUCK_MAX_WHEEL_SPEED
@@ -83,17 +91,15 @@ while robot.step(SIM_TIMESTEP) != -1:
         gsr[i] = gs.getValue()
 
 
-    print(gsr)
+    # print(gsr)
 
     match state:
     # Part 1
-    # TODO: Implement Maximum Speed Measurement under state "speed_measurement"
-    # TODO: Save the speed within XZ-plane to EPUCK_MAX_WHEEL_SPEED after measuring it.
         case "speed_measurement":
             state = "line_follower"
             # vL = MAX_SPEED
             # vR = MAX_SPEED
-            # if gsr[CENTER_IDX] < GROUND_SENSOR_THRESHOLD and gsr[RIGHT_IDX] < GROUND_SENSOR_THRESHOLD and gsr[LEFT_IDX] < GROUND_SENSOR_THRESHOLD:
+            # if seing_start_line(gsr):
             #     vL = 0
             #     vR = 0
             #     print(robot.getTime() - STARTING_TIME)
@@ -149,15 +155,18 @@ while robot.step(SIM_TIMESTEP) != -1:
                 vR = MAX_SPEED
             update_odometry(vL, vR)
 
-    # Part 3
-    # TODO: Implement Loop Closure also under state "line_follower" to reset pose when robot passes over the Start Line.
-    # Hints:
-    #
-    # 1) Set a flag whenever you encounter the line
-    #
-    # 2) Use the pose when you encounter the line last
-    # for best results
 
-    print("Current pose: [%5f, %5f, %5f]" % (pose_x, pose_y, pose_theta))
+            if seing_start_line(gsr):
+                if line_seen == False:
+                    last_time_seeing_line = robot.getTime()
+                line_seen = True
+                if robot.getTime() - last_time_seeing_line >= TIME_SEEING_LINE_THRESHOLD:
+                    print("Current pose: [%5f, %5f, %5f]" % (pose_x, pose_y, pose_theta))
+                    pose_x, pose_y, pose_theta = 0, 0, 0
+            else:
+                line_seen = False
+
+
+    # print("Current pose: [%5f, %5f, %5f]" % (pose_x, pose_y, pose_theta))
     leftMotor.setVelocity(vL)
     rightMotor.setVelocity(vR)
