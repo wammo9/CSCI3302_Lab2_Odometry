@@ -67,11 +67,13 @@ def seing_start_line(gsr):
 
 def update_odometry(vL, vR):
     global pose_x, pose_y, pose_theta
-    linear_l = (vL / MAX_SPEED) * EPUCK_MAX_WHEEL_SPEED
-    linear_r = (vR / MAX_SPEED) * EPUCK_MAX_WHEEL_SPEED
-    # all this is pretty much just taken from the slides
+    linear_l = (vL / leftMotor.getMaxVelocity()) * EPUCK_MAX_WHEEL_SPEED
+    linear_r = (vR / rightMotor.getMaxVelocity()) * EPUCK_MAX_WHEEL_SPEED
     v = ((linear_l / 2) + (linear_r / 2))
-    omega = (linear_r / EPUCK_AXLE_DIAMETER) - (linear_l / EPUCK_AXLE_DIAMETER)
+    # Effective wheel separation from a separate Webots turning calibration:
+    # right wheel at half speed, left stopped: 10.579225 rad in 9.6 s.
+    effective_axle_diameter = (0.5 * EPUCK_MAX_WHEEL_SPEED) * 9.6 / 10.579225
+    omega = (linear_r - linear_l) / effective_axle_diameter
     xI_dot = math.cos(pose_theta) * v
     yI_dot = math.sin(pose_theta) * v
     theta_dot = omega
@@ -80,6 +82,9 @@ def update_odometry(vL, vR):
     pose_x     += xI_dot * delta_t
     pose_y     += yI_dot * delta_t
     pose_theta += theta_dot * delta_t
+    # Compare heading to zero using the equivalent angle between -pi and pi.
+    # So we can be sure we fall within the correct error.
+    pose_theta = math.atan2(math.sin(pose_theta), math.cos(pose_theta))
 
 state = "speed_measurement"
 
@@ -137,23 +142,24 @@ while robot.step(SIM_TIMESTEP) != -1:
     # about calculating odometry in the world coordinate system of the
     # Webots simulator first (x points down, y points right)
         case "line_follower":
+            update_odometry(vL, vR)
+            # Use 65% of maximum speed forward and 20% for in-place turns.
             # Center Sensor detects line -> drive forward
             if gsr[CENTER_IDX] < GROUND_SENSOR_THRESHOLD:
-                vL = MAX_SPEED
-                vR = MAX_SPEED
+                vL = 0.65 * leftMotor.getMaxVelocity()
+                vR = 0.65 * rightMotor.getMaxVelocity()
             # Right Sensor detects line -> rotate clockwise in place
             elif gsr[RIGHT_IDX] < GROUND_SENSOR_THRESHOLD:
-                vL = MAX_SPEED
-                vR = -MAX_SPEED
+                vL = 0.2 * leftMotor.getMaxVelocity()
+                vR = -0.2 * rightMotor.getMaxVelocity()
             # Left Sensor detects line -> rotate counter-clockwise in place
             elif gsr[LEFT_IDX] < GROUND_SENSOR_THRESHOLD:
-                vL = -MAX_SPEED
-                vR = MAX_SPEED
-            # No sensors detect line -> rotate counter-clockwise in place to reacquire
+                vL = -0.2 * leftMotor.getMaxVelocity()
+                vR = 0.2 * rightMotor.getMaxVelocity()
+            # No sensors detect line -> rotate counter-clockwise to reacquire
             else:
-                vL = -MAX_SPEED
-                vR = MAX_SPEED
-            update_odometry(vL, vR)
+                vL = -0.2 * leftMotor.getMaxVelocity()
+                vR = 0.2 * rightMotor.getMaxVelocity()
 
 
             if seing_start_line(gsr):
