@@ -7,8 +7,7 @@ from controller import Robot, Motor, DistanceSensor
 
 # Ground Sensor Measurements under this threshold are black
 # measurements above this threshold can be considered white.
-# TODO: Set a reasonable threshold that separates "line detected" from "no line detected"
-GROUND_SENSOR_THRESHOLD = 0
+GROUND_SENSOR_THRESHOLD = 600
 
 # These are your pose values that you will update by solving the odometry equations
 pose_x = 0
@@ -82,7 +81,7 @@ while robot.step(SIM_TIMESTEP) != -1:
 
     # TODO: Uncomment to see the ground sensor values!
     # TODO: But when you don't need it, please comment it so you have a clean terminal.
-    # print(gsr)
+    print(gsr)
 
     match state:
     # Part 1
@@ -122,24 +121,24 @@ while robot.step(SIM_TIMESTEP) != -1:
     # 4) Focus on getting things generally right first, then worry
     # about calculating odometry in the world coordinate system of the
     # Webots simulator first (x points down, y points right)
-            case "line_follower":
-                # Center Sensor detects line -> drive forward
-                if gsr[CENTER_IDX] < GROUND_SENSOR_THRESHOLD:
-                    vL = MAX_SPEED
-                    vR = MAX_SPEED
-                # Right Sensor detects line -> rotate clockwise in place
-                elif gsr[RIGHT_IDX] < GROUND_SENSOR_THRESHOLD:
-                    vL = MAX_SPEED
-                    vR = -MAX_SPEED
-                # Left Sensor detects line -> rotate counter-clockwise in place
-                elif gsr[LEFT_IDX] < GROUND_SENSOR_THRESHOLD:
-                    vL = -MAX_SPEED
-                    vR = MAX_SPEED
-                # No sensors detect line -> rotate counter-clockwise in place to reacquire
-                else:
-                    vL = -MAX_SPEED
-                    vR = MAX_SPEED
-                update_odometry(vL, vR)
+        case "line_follower":
+            # Center Sensor detects line -> drive forward
+            if gsr[CENTER_IDX] < GROUND_SENSOR_THRESHOLD:
+                vL = MAX_SPEED
+                vR = MAX_SPEED
+            # Right Sensor detects line -> rotate clockwise in place
+            elif gsr[RIGHT_IDX] < GROUND_SENSOR_THRESHOLD:
+                vL = MAX_SPEED
+                vR = -MAX_SPEED
+            # Left Sensor detects line -> rotate counter-clockwise in place
+            elif gsr[LEFT_IDX] < GROUND_SENSOR_THRESHOLD:
+                vL = -MAX_SPEED
+                vR = MAX_SPEED
+            # No sensors detect line -> rotate counter-clockwise in place to reacquire
+            else:
+                vL = -MAX_SPEED
+                vR = MAX_SPEED
+            update_odometry(vL, vR)
 
     # Part 3
     # TODO: Implement Loop Closure also under state "line_follower" to reset pose when robot passes over the Start Line.
