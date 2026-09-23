@@ -60,6 +60,7 @@ STARTING_TIME = robot.getTime()
 TIME_SEEING_LINE_THRESHOLD = 0.1
 line_seen = False
 last_time_seeing_line = 0
+LINE_SEEN_COOLDOWN = 1
 
 
 def seing_start_line(gsr):
@@ -169,6 +170,7 @@ while robot.step(SIM_TIMESTEP) != -1:
                 if robot.getTime() - last_time_seeing_line >= TIME_SEEING_LINE_THRESHOLD:
                     print("Current pose: [%5f, %5f, %5f]" % (pose_x, pose_y, pose_theta))
                     pose_x, pose_y, pose_theta = 0, 0, 0
+                    line_seen = False
             else:
                 line_seen = False
 
