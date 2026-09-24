@@ -1,4 +1,7 @@
-"""csci3302_lab2 controller."""
+"""
+csci3302_lab2 controller.
+Wallis McGuire, Augustin Pedro Garcia-Huidobro, Sam Shoemaker
+"""
 
 # You may need to import some classes of the controller module.
 import math
@@ -24,8 +27,8 @@ robot = Robot()
 
 # ePuck Constants
 EPUCK_AXLE_DIAMETER = 0.053  # ePuck's wheels are 53mm apart.
-EPUCK_MAX_WHEEL_SPEED = 0.1256
-MAX_SPEED = 6.28
+EPUCK_MAX_WHEEL_SPEED = 0.1256 #m/s
+MAX_SPEED = 6.28 #radians
 
 # get the time step of the current world.
 SIM_TIMESTEP = int(robot.getBasicTimeStep())
@@ -63,7 +66,7 @@ last_time_seeing_line = 0
 LINE_SEEN_COOLDOWN = 1
 
 
-def seing_start_line(gsr):
+def seeing_start_line(gsr):
     return gsr[CENTER_IDX] < GROUND_SENSOR_THRESHOLD and gsr[RIGHT_IDX] < GROUND_SENSOR_THRESHOLD and gsr[LEFT_IDX] < GROUND_SENSOR_THRESHOLD
 
 def update_odometry(vL, vR):
@@ -96,52 +99,19 @@ while robot.step(SIM_TIMESTEP) != -1:
     for i, gs in enumerate(ground_sensors):
         gsr[i] = gs.getValue()
 
-
-    # print(gsr)
-
     match state:
     # Part 1
         case "speed_measurement":
             state = "line_follower"
             # vL = MAX_SPEED
             # vR = MAX_SPEED
-            # if seing_start_line(gsr):
+            # if seeing_start_line(gsr):
             #     vL = 0
             #     vR = 0
             #     print(robot.getTime() - STARTING_TIME)
                 # state = "line_follower"
 
     # Part 2
-    # TODO: Implement Line Following under state "line_follower"
-    # TODO: Also implement update_odometry and then call update_odometry here
-    # Hints for Line Following:
-    #
-    # 1) Setting vL=MAX_SPEED and vR=-MAX_SPEED lets the robot turn
-    # right on the spot. vL=MAX_SPEED and vR=0.5*MAX_SPEED lets the
-    # robot drive a right curve.
-    #
-    # 2) If your robot "overshoots", turn slower.
-    #
-    # 3) Only set the wheel speeds once so that you can use the speed
-    # that you calculated in your odometry calculation.
-    #
-    # 4) Disable all console output to simulate the robot superfast
-    # and test the robustness of your approach.
-    #
-    # Hints for update_odometry:
-    #
-    # 1) Divide vL/vR by MAX_SPEED to normalize, then multiply with
-    # the robot's maximum speed in meters per second.
-    #
-    # 2) SIM_TIMESTEP tells you the elapsed time per step. You need
-    # to divide by 1000.0 to convert it to seconds
-    #
-    # 3) Do simple sanity checks. In the beginning, only one value
-    # changes. Once you do a right turn, this value should be constant.
-    #
-    # 4) Focus on getting things generally right first, then worry
-    # about calculating odometry in the world coordinate system of the
-    # Webots simulator first (x points down, y points right)
         case "line_follower":
             update_odometry(vL, vR)
             # Use 65% of maximum speed forward and 20% for in-place turns.
@@ -163,7 +133,7 @@ while robot.step(SIM_TIMESTEP) != -1:
                 vR = 0.2 * rightMotor.getMaxVelocity()
 
 
-            if seing_start_line(gsr):
+            if seeing_start_line(gsr):
                 if line_seen == False:
                     last_time_seeing_line = robot.getTime()
                 line_seen = True
@@ -174,7 +144,5 @@ while robot.step(SIM_TIMESTEP) != -1:
             else:
                 line_seen = False
 
-
-    # print("Current pose: [%5f, %5f, %5f]" % (pose_x, pose_y, pose_theta))
     leftMotor.setVelocity(vL)
     rightMotor.setVelocity(vR)
